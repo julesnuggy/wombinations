@@ -53,11 +53,11 @@ def combine(str1, str2)
 
   # If the words are the same, then just return one of them...
   if wombination1 == wombination2
-    wombination1
+    puts wombination1
 
   # otherwise return both as an array
   else
-    [wombination1, wombination2]
+    puts [wombination1, wombination2]
 
   end
 end
