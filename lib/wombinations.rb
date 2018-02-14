@@ -1,7 +1,25 @@
 #!usr/bin/env ruby
 
-$vowel_count1 = $vowel_count2 = 0
+######################
+## GLOBAL VARIABLES ##
+######################
+
+# Index locations used to determine if the vowel at this index should be
+# ignored or not. So, at index 0 (i.e. a word begins with a vowel) the
+# program will not try to slice at this index to form a wombination
 $idx1 = $idx2 = 0
+
+# Used to count how many vowels there are in the given words so that we
+# know how many times to iterate the pombinations method
+$vowel_count1 = $vowel_count2 = 0
+
+# Array used in pombinations method to store each wombination that is
+# puts'd and is referenced to prevent repeat outputs
+$pom_output = []
+
+####################
+## DEFINE METHODS ##
+####################
 
 # Repeatable method to process the input strings
 # str is the input string, num indicates whether it is first or second word
@@ -20,16 +38,8 @@ def processor(str, num, idx1, idx2)
     } - 1
   end
 
-  # In arr, locate index location of first vowel after the first letter
-
-  #vow = arr.find_index { |let|
-  #  if num == 1
-  #    let =~ /[aeiouy]/ if index(let) != idx1
-  #  elsif num == 2
-  #    let =~ /[aeiouy]/ if index(let) != idx2
-  #  end
-  #}
-  vow = nil
+  # In arr, locate index location of first vowel after the indicated index
+  # Include vow == nil condition for cases where arr[i] does not match regexp
   for i in 0..arr.length
     if num == 1
       vow = i if arr[i] =~ /[aeiouy]/ && i != idx1 && vow == nil
@@ -37,11 +47,6 @@ def processor(str, num, idx1, idx2)
       vow = i if arr[i] =~ /[aeiouy]/ && i != idx2 && vow == nil
     end
   end
-
-  #puts "\nnum = #{num}"
-  #puts "vow = #{vow}"
-  #puts "idx1 = #{idx1}"
-  #puts "idx2 = #{idx2}"
 
   # Cut letters from array to create wom1 and wom2
   # Only return both if they are different (which will be whenever the
@@ -64,8 +69,6 @@ def processor(str, num, idx1, idx2)
 
   end
 
-  #puts "wom1 = #{wom1}"
-  #puts "wom2 = #{wom2}"
   # Return array of wom1 and wom2 joined up into strings
   res = [wom1.join(""), wom2.join("")]
 end
@@ -87,11 +90,11 @@ def combine(str1, str2, idx1 = $idx1, idx2 = $idx2)
 
   # If the words are the same, then just return one of them...
   if wombination1 == wombination2
-    puts wombination1
+    wombination1
 
   # otherwise return both as an array
   else
-    puts [wombination1, wombination2]
+    [wombination1, wombination2]
 
   end
 end
@@ -107,34 +110,66 @@ def input_request
   @input2 = gets.chomp
 
   puts "\nResult:"
-  puts "-------"
-  combine(@input1, @input2)
+  puts "-"*combine(@input1, @input2).length
+  puts combine(@input1, @input2)
 
+  # After combine has been run, give user the option to see all possible
+  # combinations. The pombinations method will output a single-dimensional
+  # array, $pom_outputs, which is puts'd in this method. pombinations is
+  # run iteratively based on the number of vowels contained in each input word.
+  # This works by slicing each word at the next available vowel instead of,
+  # as per the initial run, just the first vowel locations for both words.
   puts "\nDo you want to see all pombinations (possible combinations)? [Y/N]"
   yes_no = gets.chomp
 
   if yes_no.upcase == "Y"
     for i in 0..$vowel_count1
       for j in 0..$vowel_count2
-        try_again(i, j)
+        pombinations(i, j)
       end
     end
 
+  # Insert hyphen break based on longest word in $pom_output
+  # Check el2 length if the result is an Array; el1 length if a String
+  longest = 0
+  $pom_output.each { |el1, el2|
+    if el1.is_a? Array
+      longest = el2.length if el2.length > longest
+    else
+      longest = el1.length if el1.length > longest
+    end
+  }
+
+  puts "-"*longest
+  puts $pom_output
+
   else
-    puts "FINE! BYE!"
+    puts "\nFINE! BYE!\n"
   end
 end
 
-# Method to allow user to run program again with additional options
-def try_again(idx1, idx2)
-
-    puts "-"*[@input1.length, @input2.length].max*1.75
-    combine(@input1, @input2, idx1, idx2)
-
+# Method to show all possible combinations based upon the rule that the words
+# are split at the vowels.
+def pombinations(idx1, idx2, str1 = @input1, str2 = @input2)
+  pom = combine(str1, str2, idx1, idx2)
+  $pom_output.push(pom) if $pom_output.include?(pom) == false
 end
 
-###################################################
-##### NEXT STEP IS TO ELIMINATE REPEAT OUTPUTS ####
-###################################################
+#####################################
+##### FOR TESTING PURPOSES ONLY #####
+#####################################
+# Method which is run in rspec to test that pombinations outputs do not repeat
+def pombinations_test(vc1, vc2, str1 = @input1, str2 = @input2)
+  for i in 0..vc1
+    for j in 0..vc2
+      pombinations(i, j, str1, str2)
+    end
+  end
+  puts $pom_output
+end
+
+#############################
+## FOR RUNNING IN TERMINAL ##
+#############################
 
 input_request
